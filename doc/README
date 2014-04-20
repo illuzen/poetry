@@ -1,0 +1,19 @@
+######### packages to install ##########
+
+sudo easy_install nltk
+sudo easy_install SciPy
+sudo easy_install NumPy
+sudo easy_install MatPlotLib
+sudo easy_install iPython
+sudo easy_install pyzmq
+sudo easy_install jinja2
+sudo easy_install tornado
+
+
+
+
+######## how to start an iPython Notebook #########
+
+ipython notebook
+
+
