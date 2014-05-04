@@ -10,7 +10,7 @@ There are two objects here, a Database and a Table. A Database is a connection
 to the Database of choice, allowing you to issue arbitrary SQL commands, and
 also to get Table objects. 
 
->>> db = Database( db="cheeses", user="jim", password="1hGaj29Kajh", 
+>>> db = SQLDatabase( db="cheeses", user="jim", password="1hGaj29Kajh", 
         host="127.0.0.1")
 >>> db.execute( "SELECT * FROM cheese_list" )
 (( 'cheddar', 'CHE' ), ( 'american', 'AME', ), ( 'gruye', 'GRU' ))
@@ -60,12 +60,23 @@ table. Assuming that the previous commands did not occur, you can do the followi
     ('mozarella', 'MOZ'))
 '''
 
-import MySQLdb
+try:
+    import MySQLdb
+    mySQL = True
+except:
+    mySQL = False
+
+try:
+    from py2neo import neo4j, rel, node
+    neo = True
+except:
+    neo = False
+
 import itertools as it
 
 join = lambda d, values: '{}'.format( d ).join( "'{}'".format( v ) for v in map( str, values ) )
 
-class Database( object ):
+class SQLDatabase( object ):
     '''
     Represents a SQL database. 
     '''
@@ -75,6 +86,8 @@ class Database( object ):
         Take in the credentials for the server and connect to it, connecting
         to a specific database on the server.
         '''
+        if not mySQL:
+            raise ImportError( "Must install mySQLdb before using." )
 
         self.db = MySQLdb.connect( host, user, password, db )
         self.cursor = self.db.cursor()
@@ -210,3 +223,90 @@ class Table( object ):
                 clauses.append( "{} = {}".format( column, value ) )
 
         return ' AND '.join( clauses ) or None
+
+class Neo4jDatabase( object ):
+    """
+    A wrapper for a Neo4j database. INCOMPLETE.
+    """
+
+    def __init__( self, host="http://localhost:7474/db/data" ):
+        if not neo:
+            raise ImportError( "Must install py2neo before using." )
+
+        self.db = neo4j.GraphDatabaseService( host )
+        self.nodes = {}
+
+    def add_node( self, dictionary ):
+        """
+        Add a node to the graph. Pass in a dictionary of data for that node to
+        store.
+        """
+
+        self.db.create( node( dictionary ) )
+
+    def add_nodes( self, dictionaries ):
+        """
+        Batch add multiple nodes to the graph. Pass in a list of dictionaries 
+        of data for that node to store. 
+        """
+
+        self.db.create( *[ node( d ) for d in dictionaries ] )
+
+
+    def add_edge( self, tup ):
+        """
+        Add a single edge to the graph. Pass in a tuple consisting of
+        ( from, label, to ). Example:
+
+        ( 0, "KILLED", 5 )
+        """
+
+        self.db.create( rel( tup[0], tup[1], tup[2] ) )
+
+    def add_edges( self, tups ):
+        """
+        Batch add multiple edges to the graph. Pass in a tuple consisting of
+        ( from, label, to ). Example:
+
+        [(0, "LOVES", 1 )
+        (2, "LOVES", 1 )
+        (3, "HATES", 2 )]
+        """
+
+        self.db.create( *[ rel( tup[0], tup[1], tup[2] ) for tup in tups ] )
+
+def graph_push( d ):
+    """
+    Temporary way of pushing a dict of dicts to a neo4j database. Will be added
+    to neo4j later.
+    """
+
+    word_set = set( d.keys() )
+    for words in d.values():
+        word_set = word_set.union( set( words.keys() ) ) 
+
+    idx = { word : i for i, word in enumerate( word_set ) }
+    nodes = [ {'word':word} for word in word_set ]
+    relations = []
+
+    for from_word, edges in d.items():
+        for to_word, p in edges.items():
+            relations.append( ( idx[from_word], "ADJACENCY", idx[to_word] ) )
+
+    arguments = nodes + relations
+
+    g = neo4j.GraphDatabaseService()
+    g.clear()
+    g.create( *arguments )
+
+def graph_pull():
+    """
+    Temporary way to pull the data from the graph into a dictionary of
+    dictionaries.
+    """
+
+    g = neo4j.GraphDatabaseService()
+    print g.node_labels()
+
+
+# WHY DOES NOTHING WORK WTF
