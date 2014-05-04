@@ -1,5 +1,7 @@
 import nltk
 import re
+import poetry_neo
+import database
 
 def cleaned_sentences_from_text(text):
 	text_without_urls = remove_urls_from_text(text)
@@ -124,3 +126,6 @@ print 'frequency map: ' + str(freq_map)
 
 normed_freq_mat = normalize_same_sentence_frequency_matrix(freq_mat)
 print 'normed frequency matrix: ' + str(normed_freq_mat)
+
+#poetry_neo.persist_graph(normed_freq_mat)
+database.graph_push(normed_freq_mat)
