@@ -291,7 +291,7 @@ def graph_push( d ):
 
     for from_word, edges in d.items():
         for to_word, p in edges.items():
-            relations.append( ( idx[from_word], "ADJACENCY", idx[to_word] ) )
+            relations.append( ( idx[from_word], "ADJACENCY", idx[to_word], {"Probability": p} ) )
 
     arguments = nodes + relations
 
@@ -305,8 +305,18 @@ def graph_pull():
     dictionaries.
     """
 
+    d = {}
     g = neo4j.GraphDatabaseService()
-    print g.node_labels()
+    rels = [ rel for rel in g.match() ]
 
+    for rel in rels:
+        start = rel.start_node.get_properties()['word']
+        end = rel.end_node.get_properties()['word']
+        p = rel._properties['Probability']
 
-# WHY DOES NOTHING WORK WTF
+        if start in d.keys():
+            d[ start ][ end ] = p
+        else:
+            d[ start ] = { end: p }
+
+    return d
