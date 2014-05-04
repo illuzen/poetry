@@ -128,4 +128,6 @@ normed_freq_mat = normalize_same_sentence_frequency_matrix(freq_mat)
 print 'normed frequency matrix: ' + str(normed_freq_mat)
 
 #poetry_neo.persist_graph(normed_freq_mat)
-database.graph_push(normed_freq_mat)
+poetry_neo.graph_push(normed_freq_mat)
+new_mat = poetry_neo.graph_pull()
+print 'new mat: ' + str(new_mat)
