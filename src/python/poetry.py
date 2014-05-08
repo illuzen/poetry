@@ -1,7 +1,7 @@
 import nltk
 import re
 import poetry_neo
-import database
+import os
 
 def cleaned_sentences_from_text(text):
 	text_without_urls = remove_urls_from_text(text)
@@ -10,43 +10,40 @@ def cleaned_sentences_from_text(text):
 	return cleaned_sentences
 
 def clean_sentences(sentences):
+	new_sentences = []
 	digrx = re.compile('.*\\d.*')
-	for i in range(0,len(sentences)):
-		try:
-			sentence = sentences[i]
-		except:
-			pass
-		
-
+	for sentence in sentences:
 		words = nltk.word_tokenize(sentence)
-		
+
 		# remove short sentences
 		if len(words)<3:
-			sentences.remove(sentence)
+			print 'removing short sentence : ' + sentence
 			continue
 
 		# remove words with numbers in them and punctuation
+		cleaned_words = []
 		for word in words:
-			if re.match(digrx, word) != None:
-				words.remove(word)
-			if word == ',' or word == '.' or word == ':' or word == ';':
-				words.remove(word)
-				#print 'removing word: '+word
+			if re.match(digrx, word) == None:	
+				if len(word) > 1 or word.lower() == 'i' \
+				or word.lower() == 'a' or word.lower() == 'o':
+					cleaned_words.append(word)
+				else:
+					print 'removing word: ' + word
 
 		# reconstruct sentences
 		newSentence = ''
-		for word in words:
+		for word in cleaned_words:
 			newSentence += word.lower() + ' '
-		try:
-			sentences[i] = newSentence
-		except:
-			pass
-	return sentences
+		
+		new_sentences.append(newSentence)
+	return new_sentences
 
 def remove_urls_from_text(text):
+	'''
 	res = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
 	if len(res) > 0:
 		print res
+	'''
 	text = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text, re.S)
 	return text
 
@@ -108,15 +105,18 @@ def normalize_same_sentence_frequency_matrix(freqMat):
 
 	return normedFreqMat
 
+def get_all_sentences(path_to_texts):
+	sentences = []
+	for filename in os.listdir(path_to_texts):
+		text = ''
+		print filename
+		with open( path_to_texts + filename) as file:
+			for line in file:
+				text += line
+		sentences.append(cleaned_sentences_from_text(text))
+	return sentences
 
-
-with open( '/Users/ganesha/Code/Poetry/doc/texts/Two_Sentences.txt', 'r' ) as infile:
-	text = ''
-	for line in infile:
-		text += line
-
-sentences = cleaned_sentences_from_text(text)
-print 'sentences: ' + str(sentences)
+sentences = get_all_sentences('../../doc/texts/')
 
 freq_mat = same_sentence_frequency_matrix(sentences)
 print 'frequency matrix: ' + str(freq_mat)
@@ -130,4 +130,5 @@ print 'normed frequency matrix: ' + str(normed_freq_mat)
 #poetry_neo.persist_graph(normed_freq_mat)
 poetry_neo.graph_push(normed_freq_mat)
 new_mat = poetry_neo.graph_pull()
-print 'new mat: ' + str(new_mat)
+print new_mat
+

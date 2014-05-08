@@ -8,8 +8,12 @@ sudo easy_install iPython
 sudo easy_install pyzmq
 sudo easy_install jinja2
 sudo easy_install tornado
+sudo easy_install py2neo
 
 
+########## install neo4j #############
+
+http://www.neo4j.org/download_thanks?edition=community&release=2.0.3&platform=unix&packaging=zip&architecture=x32
 
 
 ######## how to start an iPython Notebook #########
