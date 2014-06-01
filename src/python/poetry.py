@@ -4,51 +4,22 @@ import poetry_neo
 import os
 import time
 import collections
+import matplotlib.pyplot as plt
 
-def cleaned_sentences_from_text(text):
-	text_without_urls = remove_urls_from_text(text)
-	sentences = nltk.sent_tokenize(text)
-	cleaned_sentences = clean_sentences(sentences)
-	return cleaned_sentences
+# DATA COLLECTING FUNCTIONS
 
-def clean_sentences(sentences):
-	new_sentences = []
-	digrx = re.compile('.*\\d.*')
-	for sentence in sentences:
-		words = nltk.word_tokenize(sentence)
+def get_all_sentences(path_to_texts):
+	sentences = []
+	for filename in os.listdir(path_to_texts):
+		text = ''
+		print filename
+		with open( path_to_texts + filename) as file:
+			for line in file:
+				text += line
+		sentences += cleaned_sentences_from_text(text)
+	return sentences
 
-		# remove short sentences
-		if len(words)<3:
-			#print 'removing short sentence : ' + sentence
-			continue
-
-		# remove words with numbers in them and punctuation
-		cleaned_words = []
-		for word in words:
-			if re.match(digrx, word) == None:	
-				if len(word) > 1 or word.lower() == 'i' \
-				or word.lower() == 'a' or word.lower() == 'o':
-					cleaned_words.append(word)
-				else:
-					pass
-					#print 'removing word: ' + word
-
-		# reconstruct sentences
-		newSentence = ''
-		for word in cleaned_words:
-			newSentence += word.lower() + ' '
-		
-		new_sentences.append(newSentence)
-	return new_sentences
-
-def remove_urls_from_text(text):
-	'''
-	res = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
-	if len(res) > 0:
-		print res
-	'''
-	text = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text, re.S)
-	return text
+# DATA PROCESSING FUNCTIONS
 
 def same_sentence_frequency_matrix(sentences):
 	frequency_matrix = {}
@@ -122,38 +93,6 @@ def normalize_same_sentence_frequency_matrix_asymmetric(freqMat):
 
 	return normedFreqMat		
 
-def get_all_sentences(path_to_texts):
-	sentences = []
-	for filename in os.listdir(path_to_texts):
-		text = ''
-		print filename
-		with open( path_to_texts + filename) as file:
-			for line in file:
-				text += line
-		sentences += cleaned_sentences_from_text(text)
-	return sentences
-
-def remove_words_below_threshold(freqMat, threshold):
-	words_to_remove = []
-
-	for word in freqMat.keys():
-		if freqMat[word][word] < threshold:
-			print 'removing infrequent word: ', word
-			words_to_remove.append(word)
-
-	for word1 in freqMat.keys():
-		if word1 in words_to_remove:
-			del freqMat[word1]
-		else: 
-			for word2 in freqMat[word1].keys():
-				if word2 in words_to_remove:
-					del freqMat[word1][word2]
-
-	return freqMat
-
-def print_words_with_frequency(freqMat):
-	for word in freqMat.keys():
-		print word + ',' + str(freqMat[word][word])
 
 def calculate_frequency_mean(freqMat):
 	means = {}
@@ -175,20 +114,119 @@ def calculate_frequency_variance(freqMat):
 
 	for word1 in freqMat.keys():
 		variance = 0
-		for word2 in freqMat[word1].keys():
-			variance += (float(freqMat[word1][word2]) - float(means[word1])) ** 2
-
+		for word2 in freqMat.keys():
+			if freqMat[word1].has_key(word2):
+				variance += (float(freqMat[word1][word2]) - float(means[word1])) ** 2
+			else:
+				variance += float(means[word1]) ** 2
 		variance /= float(len(freqMat[word1]))
 		variances[word1] = variance
 
 	return variances
 
+
+# DATA CLEANING FUNCTIONS 
+
+def cleaned_sentences_from_text(text):
+	text_without_urls = remove_urls_from_text(text)
+	sentences = nltk.sent_tokenize(text)
+	cleaned_sentences = clean_sentences(sentences)
+	return cleaned_sentences
+
+def clean_sentences(sentences):
+	new_sentences = []
+	digrx = re.compile('.*\\d.*')
+	for sentence in sentences:
+		words = nltk.word_tokenize(sentence)
+
+		# remove short sentences
+		if len(words)<3:
+			#print 'removing short sentence : ' + sentence
+			continue
+
+		# remove words with numbers in them and punctuation
+		cleaned_words = []
+		for word in words:
+			if re.match(digrx, word) == None:	
+				if len(word) > 1 or word.lower() == 'i' \
+				or word.lower() == 'a' or word.lower() == 'o':
+					cleaned_words.append(word)
+				else:
+					pass
+					#print 'removing word: ' + word
+
+		# remove underscores and back-ticks and apostrophes and periods and commas
+		for word in cleaned_words:
+			word.replace('_', '')
+			word.replace('`','')
+			word.replace('\'', '')
+			word.replace('.','')
+			word.replace(',','')
+
+		# reconstruct sentences
+		newSentence = ''
+		for word in cleaned_words:
+			newSentence += word.lower() + ' '
+		
+		new_sentences.append(newSentence)
+	return new_sentences
+
+def remove_urls_from_text(text):
+	'''
+	res = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+	if len(res) > 0:
+		print res
+	'''
+	text = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text, re.S)
+	return text
+
+
+def remove_words_below_threshold(freqMat, threshold):
+	words_to_remove = []
+
+	for word in freqMat.keys():
+		if freqMat[word][word] < threshold:
+			print 'removing infrequent word: ', word, freqMat[word][word]
+			words_to_remove.append(word)
+
+	for rare_word in words_to_remove:
+		del freqMat[rare_word]
+
+	for word1 in freqMat.keys():
+		for rare_word in words_to_remove:
+			if freqMat[word1].has_key(rare_word):
+				del freqMat[word1][rare_word]
+
+
+def remove_duplicate_edges(freqMat):
+	already_seen = []
+
+	for word1 in freqMat.keys():
+		already_seen.append(word1)
+		for word2 in freqMat[word1].keys():
+			if word2 in already_seen:
+				del freqMat[word1][word2]
+
+# UTILITY FUNCTIONS
+
+def print_words_with_frequency(freqMat):
+	for word in freqMat.keys():
+		print word + ',' + str(freqMat[word][word])
+
+def plot_word_frequency(freqMat):
+	for word in freqMat.keys():
+		plt.bar(range(len(freqMat[word])), freqMat[word].values(), align='center')
+		plt.xticks(range(len(freqMat[word])), freqMat[word].keys())
+		break
+
+	plt.show()
+
 ##############################################################################
 linebreak = "\n\n\n#######################################################################\n\n\n"
 
 
-sentences = get_all_sentences('../../doc/texts/')
-#sentences = get_all_sentences('../../doc/test_texts/')
+#sentences = get_all_sentences('../../doc/texts/')
+sentences = get_all_sentences('../../doc/test_texts/')
 
 start_time = time.time()
 freq_mat = same_sentence_frequency_matrix(sentences)
@@ -198,12 +236,24 @@ print 'took ' + str(end_time - start_time) + ' seconds to compute'
 
 print linebreak
 
+remove_words_below_threshold(freq_mat, 100)
+
+print linebreak
+
 print_words_with_frequency(freq_mat)
 
+
+symmetric_normed_freq_mat = normalize_same_sentence_frequency_matrix_symmetric(freq_mat)
+remove_duplicate_edges(symmetric_normed_freq_mat)
+poetry_neo.graph_push(symmetric_normed_freq_mat)
+
+print linebreak
 
 asymmetric_normed_freq_mat = normalize_same_sentence_frequency_matrix_asymmetric(freq_mat)
 var_mat = calculate_frequency_variance(asymmetric_normed_freq_mat)
 sorted_normed = collections.OrderedDict(sorted(var_mat.items(), key=lambda t:t[1]))
+
+plot_word_frequency(sorted_normed)
 
 var_file = open('var_file', 'w')
 var_file.write(str(sorted_normed))
