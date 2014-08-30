@@ -1,56 +1,23 @@
 Poetry
 
-A project to inspire creativity through poetry suggestion.
+To run:
 
+cd ./src/python
+python poetry.py
 
--------------
-Database Info
--------------
+This will run the program on all the documents in ./doc/texts
 
-Initializing:
-	>$ mysql -u USERNAME -p < database_init.sql
+The program calculates same-sentence frequency for all pairs of words in the document and plots the variances of that frequency with matplotlib and prints those variances to ./src/var_file  
 
-Organization:
-	Database name; poetry
+It also stores the relationships between the words in a neo4j graph database
 
-Tables
-+------------------+
-| Tables_in_poetry |
-+------------------+
-| authors          |
-| edges            |
-| memes            |
-| metrics          |
-| source_types     |
-| sources          |
-+------------------+
-	
-Sources - texts that were analyzed.
-+--------------+--------------+------+-----+---------+----------------+
-| Field        | Type         | Null | Key | Default | Extra          |
-+--------------+--------------+------+-----+---------+----------------+
-| id           | int(11)      | NO   | PRI | NULL    | auto_increment |
-| title        | varchar(256) | NO   |     | NULL    |                |
-| length_words | int(11)      | YES  |     | NULL    |                |
-| num_unique   | int(11)      | YES  |     | NULL    |                |
-| date         | date         | YES  |     | NULL    |                |
-| source_type  | int(11)      | YES  |     | NULL    |                |
-| author       | int(11)      | YES  |     | NULL    |                |
-+--------------+--------------+------+-----+---------+----------------+
+For development, use ./doc/test_texts instead of ./doc/texts to reduce computation time.
 
-Edges - two memes that share some sort of relationship defined by metric type.
-+---------------------+--------------+------+-----+---------+----------------+
-| Field               | Type         | Null | Key | Default | Extra          |
-+---------------------+--------------+------+-----+---------+----------------+
-| id                  | int(11)      | NO   | PRI | NULL    | auto_increment |
-| normalized_relation | decimal(6,6) | YES  |     | NULL    |                |
-| relation            | decimal(6,6) | YES  |     | NULL    |                |
-| meme1               | int(11)      | YES  |     | NULL    |                |
-| meme2               | int(11)      | YES  |     | NULL    |                |
-| metric_type         | int(11)      | YES  |     | NULL    |                |
-+---------------------+--------------+------+-----+---------+----------------+
+./miscellania has various tangentially related scripts, including 
 
-authors - author's of the sources
-metrics - metric name that describes an edge
-memes - meaningful set of knowledge, aka words
-source_type - type of source the information came from (digital or otherwise)
+-database_init.sql: an sql script to create a mysql database for this same idea
+-keledones.py: a python script containing classes that could be used to organize documents
+-luau.py: a part of speech hidden-markov-model
+-nltk_example.py: an example of how to use nltk
+-py2neo_example.py: an example of how to connect python to neo4j
+

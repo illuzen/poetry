@@ -14,13 +14,23 @@ def persist_graph(frequency_matrix):
 	tx.execute()
 	print 'executed'
 	tx.commit()
-					 
+	
+def persist_graph( frequency_matrix):
+    nodes = []
+    for word1 in frequency_matrix.keys():
+        if word1 not in nodes:
+            nodes.append(word1)
+        for word2 in frequency_matrix[word1].keys():
+            if word2 not in nodes:
+                nodes.append(word2)
+
+
 def graph_push( d ):
     """
     Temporary way of pushing a dict of dicts to a neo4j database. Will be added
     to neo4j later.
     """
-
+    neo4j._add_header('X-Stream', 'true;format=pretty')
     word_set = set( d.keys() )
     for words in d.values():
         word_set = word_set.union( set( words.keys() ) ) 

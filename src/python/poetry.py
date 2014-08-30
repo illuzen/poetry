@@ -144,6 +144,10 @@ def clean_sentences(sentences):
 			#print 'removing short sentence : ' + sentence
 			continue
 
+		# remove underscores and back-ticks and apostrophes and periods and commas
+		for word in words:
+			word = re.sub("[_`'.,]*",'', word)
+
 		# remove words with numbers in them and punctuation
 		cleaned_words = []
 		for word in words:
@@ -155,13 +159,6 @@ def clean_sentences(sentences):
 					pass
 					#print 'removing word: ' + word
 
-		# remove underscores and back-ticks and apostrophes and periods and commas
-		for word in cleaned_words:
-			word.replace('_', '')
-			word.replace('`','')
-			word.replace('\'', '')
-			word.replace('.','')
-			word.replace(',','')
 
 		# reconstruct sentences
 		newSentence = ''
@@ -213,20 +210,24 @@ def print_words_with_frequency(freqMat):
 	for word in freqMat.keys():
 		print word + ',' + str(freqMat[word][word])
 
-def plot_word_frequency(freqMat):
-	for word in freqMat.keys():
-		plt.bar(range(len(freqMat[word])), freqMat[word].values(), align='center')
-		plt.xticks(range(len(freqMat[word])), freqMat[word].keys())
-		break
+def handle_mouseover(event):
+	print event.xdata
+	plt.figtext(0,0,str(event.x))
+	#plt.xticks(1, event.x)
 
+def plot_word_frequency(freqMat):
+	figure = plt.figure()
+	figure.canvas.mpl_connect('motion_notify_event', handle_mouseover)
+	plt.bar(range(len(freqMat)), freqMat.values(), align='center')
+	plt.xticks(range(len(freqMat)), freqMat.keys())
 	plt.show()
 
 ##############################################################################
 linebreak = "\n\n\n#######################################################################\n\n\n"
 
 
-#sentences = get_all_sentences('../../doc/texts/')
-sentences = get_all_sentences('../../doc/test_texts/')
+sentences = get_all_sentences('../../doc/texts/')
+#sentences = get_all_sentences('../../doc/test_texts/')
 
 start_time = time.time()
 freq_mat = same_sentence_frequency_matrix(sentences)
@@ -236,7 +237,7 @@ print 'took ' + str(end_time - start_time) + ' seconds to compute'
 
 print linebreak
 
-remove_words_below_threshold(freq_mat, 100)
+remove_words_below_threshold(freq_mat, 50)
 
 print linebreak
 
@@ -245,7 +246,7 @@ print_words_with_frequency(freq_mat)
 
 symmetric_normed_freq_mat = normalize_same_sentence_frequency_matrix_symmetric(freq_mat)
 remove_duplicate_edges(symmetric_normed_freq_mat)
-poetry_neo.graph_push(symmetric_normed_freq_mat)
+#poetry_neo.graph_push(symmetric_normed_freq_mat)
 
 print linebreak
 
