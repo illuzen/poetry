@@ -49,5 +49,7 @@ with app.test_request_context():
 
 
 if __name__ == "__main__":
-	app.debug = True
-	app.run()
+#   Uncomment these to run in debug mode
+#	app.debug = True
+#	app.run()
+	app.run(host='0.0.0.0')

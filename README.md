@@ -34,6 +34,16 @@ For development, use ./doc/test_texts instead of ./doc/texts to reduce computati
 + Flask server: server.py
 ================================================================
 
+To add a url route, add the following to server.py:
+
+@app.route('/my_url')
+def my_function():
+	# do python stuff
+
+if you want to serve an html file, use 
+app.send_static_file('my_html.html')
+
+See examples for more info
 
 
 ================================================================
