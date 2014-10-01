@@ -38,6 +38,12 @@ def profile(username):
     # show the user profile for that user
     return 'User %s' % username
 
+@app.errorhandler(404)
+def page_not_found(e):
+    """Return a custom 404 error."""
+    return 'Sorry, nothing at this URL.', 404
+
+
 '''
 with app.test_request_context():
 	print(url_for('hello'))
