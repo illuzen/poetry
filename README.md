@@ -1,5 +1,10 @@
 Poetry
 
+
+Scripts:
+================================================================
++ Same-sentence frequency variance calculator: poetry.py
+================================================================
 To run:
 
 cd ./src/python
@@ -13,6 +18,27 @@ It also stores the relationships between the words in a neo4j graph database
 
 For development, use ./doc/test_texts instead of ./doc/texts to reduce computation time.
 
+================================================================
++ Simple wikipedia scraper: scraper.py
+================================================================
+
+================================================================
++ Hierarchical clustering class: clustering_demo.py
+================================================================
+
+================================================================
++ Automatic summarizer: summarizer.py
+================================================================
+
+================================================================
++ Flask server: server.py
+================================================================
+
+
+
+================================================================
++ Miscellania: ./miscellania/
+================================================================
 ./miscellania has various tangentially related scripts, including 
 
 -database_init.sql: an sql script to create a mysql database for this same idea
