@@ -43,8 +43,10 @@ def my_function():
 if you want to serve an html file, use 
 app.send_static_file('my_html.html')
 
-See examples for more info
+For more info, see the examples in server.py or look thru
+http://flask.pocoo.org/docs/0.10/quickstart/#quickstart
 
+Our server's IP is http://130.211.246.132:5000/
 
 ================================================================
 + Miscellania: ./miscellania/
