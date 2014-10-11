@@ -12,6 +12,12 @@ def hello():
 def booger():
 	return "Booger balls!"
 
+@app.route('/egregious')
+def egreg():
+	return "Remarkable!"
+
+
+
 @app.route('/search/<topic>')
 def search(topic):
 	data = summarizer.build_idea_tree(topic)
